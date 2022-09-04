@@ -7,3 +7,4 @@ COPY title.html /usr/share/jitsi-meet/title.html
 COPY tsmclogo.png /usr/share/jitsi-meet/images/tsmclogo.png
 COPY favicon.ico /usr/share/jitsi-meet/images/favicon.ico
 COPY manifest.json /usr/share/jitsi-meet/manifest.json
+COPY interface_config.js /config/interface_config.js
