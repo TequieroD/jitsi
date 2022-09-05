@@ -7,8 +7,8 @@
       "platform": "chromeos_play"
     }
   ],
-  "short_name": "TSMC Meet",
-  "name": "TSMC Meet",
+  "short_name": "TTTT Meet",
+  "name": "TTTT Meet",
   "icons": [
     {
       "src": "static/pwa/icons/icon192.png",
