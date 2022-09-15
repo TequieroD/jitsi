@@ -141,7 +141,7 @@ jvb:
     ## Annotations to be added to the service (if LoadBalancer is used)
     ##
     annotations: {}
-  publicIP: 35.223.168.143
+      #  publicIP: 35.223.168.143
   breweryMuc: jvbbrewery
 
   livenessProbe:
@@ -285,4 +285,4 @@ prosody:
   #     name: '{{ include "prosody.fullname" . }}-jibri'
   image:
     repository: jitsi/prosody
-    tag: 'stable-7648-4'
+    tag: 'stable-6433'
