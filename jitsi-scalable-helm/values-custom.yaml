@@ -430,7 +430,7 @@ jvb:
   enabled: true
 
   # Number of JVB for each shard if you don't want autoscaling
-  replicaCount: 1
+  replicaCount: 5
 
   image:
     repository: jitsi/jvb
