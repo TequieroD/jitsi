@@ -136,12 +136,12 @@ jvb:
   UDPPort: 30000
   service:
     enabled:
-    type: NodePort
+    type: LoadBalancer
     externalIPs: []
     ## Annotations to be added to the service (if LoadBalancer is used)
     ##
     annotations: {}
-      #  publicIP: 35.223.168.143
+  publicIP: 34.68.20.91
   breweryMuc: jvbbrewery
 
   livenessProbe:

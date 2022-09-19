@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "jitsi-meet.jvb.fullname" . }}
+  name: {{ include "jitsi-meet.jvb.fullname" . }}-udp
   annotations:
   {{- range $key, $value := .Values.jvb.service.annotations }}
     {{ $key }}: {{ $value | quote }}
@@ -21,11 +21,6 @@ spec:
       {{- end }}
       protocol: UDP
       name: rtp-udp
-    {{- if .Values.jvb.websockets.enabled }}
-    - port: 9090
-      protocol: TCP
-      name: colibri-ws-tcp
-    {{- end }}
   {{- with .Values.jvb.service.externalIPs }}
   externalIPs:
   {{ toYaml . | indent 2 | trim }}
