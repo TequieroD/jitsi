@@ -1,0 +1,535 @@
+# Default values for jitsi.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+    
+nameOverride: ""
+fullnameOverride: ""
+
+# Global configs which used by all components
+global:
+  # Internal XMPP domain configs
+  xmpp:
+    domain: meet.jitsi
+    authDomain:
+    mucDomain:
+    internalMucDomain:
+    guestDomain:
+
+  # Jitsi Docker environment. For more options checkout .env.example 
+  # from this repo: https://github.com/jitsi/docker-jitsi-meet
+  env: 
+    JVB_WS_DOMAIN: ws.meet.dennychen.tw
+    PUBLIC_URL: https://meet.dennychen.tw
+
+    ENABLE_AUTH: 0
+    ENABLE_GUESTS: 1
+    ENABLE_COLIBRI_WEBSOCKET: 1
+    GLOBAL_CONFIG: statistics = "internal";\nstatistics_interval = 15;
+    GLOBAL_MODULES: prometheus,measure_stanza_counts,measure_client_presence
+    XMPP_MUC_MODULES: muc_meeting_id,muc_domain_mapper
+
+    JIBRI_BREWERY_MUC: jibribrewery
+    JIBRI_RECORDER_USER: recorder
+    JIBRI_XMPP_USER: jibri
+
+    JICOFO_AUTH_USER: focus
+
+    JIGASI_BREWERY_MUC: jigasibrewery
+    JIGASI_XMPP_USER: jigasi
+
+    JVB_AUTH_USER: jvb
+    JVB_BREWERY_MUC: jvbbrewery
+    JVB_ENABLE_APIS: colibri,rest
+
+    TZ: UTC
+
+    # For more environment please check docker repo: https://github.com/jitsi/docker-jitsi-meet
+    # JWT_APP_ID: my_jitsi_app_id
+
+  # Same as above but for storing secrets
+  secretEnvs: 
+    JIBRI_RECORDER_PASSWORD: 55053500c942d95cfa4687ec5fd463b8
+    JIBRI_XMPP_PASSWORD: 26244b827895fb68e2e4cc91c7965caa
+    JICOFO_AUTH_PASSWORD: 1ff0db6ac65d5d70c34da21e8ccc468f
+    JIGASI_XMPP_PASSWORD: 73956a0d757eca517b59b4cfb4c83acb
+    JVB_AUTH_PASSWORD: 567363f4e762aa79f9980618dd48f15a
+    JVB_STUN_SERVERS: meet-jit-si-turnrelay.jitsi.net:443
+
+    # Any env contains secret should be placed here. Check docker repo for more env: https://github.com/jitsi/docker-jitsi-meet
+    # JWT_APP_SECRET: my_jitsi_app_secret
+
+  # Shard configs. To add new shard just duplicate this `shard-0` block and rename it to shard-1, shard-2,...
+  shards:
+    shard-0:
+      # JVB specific shard configs
+      xmppServer: # Overrides XMPP_SERVER for jvb on this shard
+      jvbBasePort: 30000 # Base nodeport for jvb on this shard
+      jvbWebsocketBasePorts: # Base nodeport to expose colibri websocket
+        http:
+        # admin:
+
+      # Prosody specific shard configs
+      prosodyNodePorts: # Assign nodeport to expose prosody
+        bosh-insecure:
+        xmpp-c2s:
+        xmpp-component:
+        # bosh-secure:
+        # xmpp-s2s:
+
+    # shard-1:
+    #   # JVB specific shard configs
+    #   xmppServer: # Overrides XMPP_SERVER for jvb on this shard
+    #   jvbBasePort: 31000 # Base nodeport for jvb on this shard
+    #   jvbWebsocketBasePorts: # Base nodeport to expose colibri websocket
+    #     http: 
+    #     # admin:
+
+    #   # Prosody specific shard configs
+    #   prosodyNodePorts: # Assign nodeport to expose prosody
+    #     bosh-insecure: 
+    #     xmpp-c2s:
+    #     xmpp-component:
+    #     # bosh-secure:
+    #     # xmpp-s2s:
+
+# Jicofo specific configurations
+jicofo:
+  enabled: true
+  image: 
+    repository: jitsi/jicofo
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+  imagePullSecrets: []
+  podAnnotations: {}
+
+  resources: {}
+    # limits:
+    #   memory: 400Mi
+    #   cpu: 400m
+    # requests:
+    #   memory: 400Mi
+    #   cpu: 400m
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  # Allowed environment variables (include normal env and secret env) to pass to jicofo pod
+  # Usually don't need to change this
+  allowedEnv:
+    - AUTH_TYPE
+    - BRIDGE_AVG_PARTICIPANT_STRESS
+    - BRIDGE_STRESS_THRESHOLD
+    - ENABLE_AUTH
+    - ENABLE_AUTO_OWNER
+    - ENABLE_CODEC_VP8
+    - ENABLE_CODEC_VP9
+    - ENABLE_CODEC_H264
+    - ENABLE_OCTO
+    - ENABLE_RECORDING
+    - ENABLE_SCTP
+    - JICOFO_AUTH_USER
+    - JICOFO_AUTH_PASSWORD
+    - JICOFO_CONF_INITIAL_PARTICIPANT_WAIT_TIMEOUT
+    - JICOFO_CONF_SINGLE_PARTICIPANT_TIMEOUT
+    - JICOFO_SHORT_ID
+    - JICOFO_RESERVATION_ENABLED 
+    - JICOFO_RESERVATION_REST_BASE_URL 
+    - JIBRI_BREWERY_MUC
+    - JIBRI_REQUEST_RETRIES
+    - JIBRI_PENDING_TIMEOUT
+    - JIGASI_BREWERY_MUC
+    - JIGASI_SIP_URI
+    - JVB_BREWERY_MUC
+    - MAX_BRIDGE_PARTICIPANTS
+    - OCTO_BRIDGE_SELECTION_STRATEGY
+    - TZ
+
+# Prosody specific configurations
+prosody:
+  enabled: true
+  image: 
+    repository: jitsi/prosody
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+  imagePullSecrets: []
+  podAnnotations: {}
+
+  service:
+    type: ClusterIP
+    annotations: {}
+    ports:
+      bosh-insecure: 5280
+      xmpp-c2s: 5222
+      xmpp-component: 5347
+      # xmpp-s2s: 5269
+      # bosh-secure: 5281
+
+  # Inject your custom files (configs, plugins,...) to prosody container 
+  extraFiles: []
+    # - name: some-plugin.lua
+    #   mountPath: /prosody-plugins-custom/some-plugin.lua
+    #   mode: 0400
+    #   content: |
+    #     module:set_global();
+
+  resources: {}
+    # limits:
+    #   memory: 300Mi
+    #   cpu: 300m
+    # requests:
+    #   memory: 300Mi
+    #   cpu: 300m
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  # Allowed environment variables (include normal env and secret env) to pass to prosody pod
+  # Usually don't need to change this
+  allowedEnv:
+    - AUTH_TYPE
+    - ENABLE_AUTH
+    - ENABLE_GUESTS
+    - ENABLE_LOBBY
+    - ENABLE_AV_MODERATION
+    - ENABLE_XMPP_WEBSOCKET
+    - GLOBAL_MODULES
+    - GLOBAL_CONFIG
+    - LDAP_URL
+    - LDAP_BASE
+    - LDAP_BINDDN
+    - LDAP_BINDPW
+    - LDAP_FILTER
+    - LDAP_AUTH_METHOD
+    - LDAP_VERSION
+    - LDAP_USE_TLS
+    - LDAP_TLS_CIPHERS
+    - LDAP_TLS_CHECK_PEER
+    - LDAP_TLS_CACERT_FILE
+    - LDAP_TLS_CACERT_DIR
+    - LDAP_START_TLS
+    - XMPP_MODULES
+    - XMPP_MUC_MODULES
+    - XMPP_INTERNAL_MUC_MODULES
+    - XMPP_CROSS_DOMAIN
+    - JICOFO_COMPONENT_SECRET
+    - JICOFO_AUTH_USER
+    - JICOFO_AUTH_PASSWORD
+    - JVB_AUTH_USER
+    - JVB_AUTH_PASSWORD
+    - JIGASI_XMPP_USER
+    - JIGASI_XMPP_PASSWORD
+    - JIBRI_XMPP_USER
+    - JIBRI_XMPP_PASSWORD
+    - JIBRI_RECORDER_USER
+    - JIBRI_RECORDER_PASSWORD
+    - JWT_APP_ID
+    - JWT_APP_SECRET
+    - JWT_ACCEPTED_ISSUERS
+    - JWT_ACCEPTED_AUDIENCES
+    - JWT_ASAP_KEYSERVER
+    - JWT_ALLOW_EMPTY
+    - JWT_AUTH_TYPE
+    - JWT_TOKEN_AUTH_MODULE
+    - LOG_LEVEL
+    - PUBLIC_URL
+    - TURN_CREDENTIALS
+    - TURN_HOST
+    - TURNS_HOST
+    - TURN_PORT
+    - TURNS_PORT
+    - TZ
+
+# Web specific configurations
+web:
+  enabled: true
+  image: 
+    repository: jitsi/web
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+  imagePullSecrets: []
+  podAnnotations: {}
+
+  service:
+    type: ClusterIP
+    annotations: {}
+    port: 80
+    # nodePort: 32080
+
+  # Only work if you have 1 shard. In that case you can disable haproxy and expose web service directly
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: chart-example.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
+  # Inject your custom files (configs, webpages,...) to web container 
+  extraFiles: []
+    # - name: plugin.head.html
+    #   mountPath: /usr/share/jitsi-meet/plugin.head.html
+    #   mode: 0400
+    #   content: |
+    #     <style>
+    #     .welcome .welcome-watermark{position:absolute;width:100%;height:auto}
+    #     #footer{margin-top:20px;margin-bottom:20px;font-size:14px}
+    #     </style>
+
+  resources: {}
+    # limits:
+    #   memory: 300Mi
+    #   cpu: 400m
+    # requests:
+    #   memory: 300Mi
+    #   cpu: 400m
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  # Allowed environment variables (include normal env and secret env) to pass to web pod
+  # Usually don't need to change this
+  allowedEnv:
+    - ENABLE_COLIBRI_WEBSOCKET
+    - ENABLE_FLOC
+    - ENABLE_XMPP_WEBSOCKET
+    - ENABLE_HTTP_REDIRECT
+    - DISABLE_DEEP_LINKING
+    - PUBLIC_URL
+    - TZ
+    - AMPLITUDE_ID
+    - ANALYTICS_SCRIPT_URLS
+    - ANALYTICS_WHITELISTED_EVENTS
+    - CALLSTATS_CUSTOM_SCRIPT_URL
+    - CALLSTATS_ID
+    - CALLSTATS_SECRET
+    - CHROME_EXTENSION_BANNER_JSON
+    - CONFCODE_URL
+    - CONFIG_EXTERNAL_CONNECT
+    - DEFAULT_LANGUAGE
+    - DEPLOYMENTINFO_ENVIRONMENT
+    - DEPLOYMENTINFO_ENVIRONMENT_TYPE
+    - DEPLOYMENTINFO_REGION
+    - DEPLOYMENTINFO_USERREGION
+    - DIALIN_NUMBERS_URL
+    - DIALOUT_AUTH_URL
+    - DIALOUT_CODES_URL
+    - DROPBOX_APPKEY
+    - DROPBOX_REDIRECT_URI
+    - DYNAMIC_BRANDING_URL
+    - ENABLE_AUDIO_PROCESSING
+    - ENABLE_AUTH
+    - ENABLE_CALENDAR
+    - ENABLE_FILE_RECORDING_SERVICE
+    - ENABLE_FILE_RECORDING_SERVICE_SHARING
+    - ENABLE_GUESTS
+    - ENABLE_LIPSYNC
+    - ENABLE_NO_AUDIO_DETECTION
+    - ENABLE_P2P
+    - ENABLE_PREJOIN_PAGE
+    - ENABLE_WELCOME_PAGE
+    - ENABLE_CLOSE_PAGE
+    - ENABLE_RECORDING
+    - ENABLE_REMB
+    - ENABLE_REQUIRE_DISPLAY_NAME
+    - ENABLE_SIMULCAST
+    - ENABLE_STATS_ID
+    - ENABLE_STEREO
+    - ENABLE_SUBDOMAINS
+    - ENABLE_TALK_WHILE_MUTED
+    - ENABLE_TCC
+    - ENABLE_TRANSCRIPTIONS
+    - ETHERPAD_PUBLIC_URL
+    - ETHERPAD_URL_BASE
+    - GOOGLE_ANALYTICS_ID
+    - GOOGLE_API_APP_CLIENT_ID
+    - INVITE_SERVICE_URL
+    - JICOFO_AUTH_USER
+    - MATOMO_ENDPOINT
+    - MATOMO_SITE_ID
+    - MICROSOFT_API_APP_CLIENT_ID
+    - NGINX_RESOLVER
+    - NGINX_WORKER_PROCESSES
+    - NGINX_WORKER_CONNECTIONS
+    - PEOPLE_SEARCH_URL
+    - RESOLUTION
+    - RESOLUTION_MIN
+    - RESOLUTION_WIDTH
+    - RESOLUTION_WIDTH_MIN
+    - START_AUDIO_ONLY
+    - START_AUDIO_MUTED
+    - START_WITH_AUDIO_MUTED
+    - START_SILENT
+    - DISABLE_AUDIO_LEVELS
+    - ENABLE_NOISY_MIC_DETECTION
+    - START_BITRATE
+    - DESKTOP_SHARING_FRAMERATE_MIN
+    - DESKTOP_SHARING_FRAMERATE_MAX
+    - START_VIDEO_MUTED
+    - START_WITH_VIDEO_MUTED
+    - TESTING_CAP_SCREENSHARE_BITRATE
+    - TESTING_OCTO_PROBABILITY
+    - TOKEN_AUTH_URL
+
+# HAproxy specific configurations, used to load balance between shards
+haproxy:
+  enabled: true
+  image: 
+    repository: haproxy
+    pullPolicy: IfNotPresent
+    tag: ""
+  imagePullSecrets: []
+  podAnnotations: {}
+
+  service:
+    type: ClusterIP
+    annotations: {}
+    port: 80
+    # nodePort: 32080
+
+  # Expose this as your web domain
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: chart-example.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
+  resources: {}
+    # limits:
+    #   memory: 300Mi
+    #   cpu: 400m
+    # requests:
+    #   memory: 300Mi
+    #   cpu: 400m
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# JVB specific configurations
+jvb:
+  enabled: true
+
+  # Number of JVB for each shard if you don't want autoscaling
+  replicaCount: 1
+
+  image:
+    repository: jitsi/jvb
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  imagePullSecrets: []
+
+  # JVB statefulset annotations, used to interact with metacontroller if you like
+  statefulSetAnnotations: {}
+    # service-per-pod-label: "statefulset.kubernetes.io/pod-name"
+
+  podAnnotations: {}
+
+  # Expose directly udp port as NodePort.
+  udp:
+    service:
+      enabled: true
+      annotations: {}
+
+  # Expose websocket
+  websocket:
+    service:
+      enabled: true
+      type: ClusterIP
+      annotations: {}
+      ports:
+        http: 9090
+        # admin: 8080
+
+    # Enable this ingress to auto expose colibri websocket and load balance between jvbs
+    ingress:
+      enabled: false
+      className: ""
+      annotations: {}
+        # kubernetes.io/ingress.class: nginx
+        # kubernetes.io/tls-acme: "true"
+      hosts:
+        - ws.meet.example.com
+      tls: []
+      #  - secretName: chart-example-tls
+      #    hosts:
+      #      - ws.meet.example.com
+
+  resources: {}
+    # requests:
+    #   cpu: "1500m"
+    #   memory: "1000Mi"
+    # limits:
+    #   cpu: "8000m"
+    #   memory: "1000Mi"
+
+  # JVB autoscaling config. Checkout README.md for more detail on how each JVB's NodePort is calculated
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  # Time to wait for JVB to gracefully stop. It depends on your room duration.
+  terminationGracePeriodSeconds: 3600
+
+  # Allowed environment variables (include normal env and secret env) to pass to web pod
+  # Usually don't need to change this
+  allowedEnv:
+    - ENABLE_COLIBRI_WEBSOCKET
+    - ENABLE_OCTO
+    - JVB_AUTH_USER
+    - JVB_AUTH_PASSWORD
+    - JVB_BREWERY_MUC
+    - JVB_STUN_SERVERS
+    - JVB_ENABLE_APIS
+    - JVB_WS_DOMAIN
+    - PUBLIC_URL
+    - JVB_OCTO_BIND_ADDRESS
+    - JVB_OCTO_PUBLIC_ADDRESS
+    - JVB_OCTO_BIND_PORT
+    - JVB_OCTO_REGION
+    - TZ
+
+  # Enable prometheus exporter sidecar for JVBs
+  monitoring:
+    enabled: false
+    image:
+      repository: systemli/prometheus-jitsi-meet-exporter
+      pullPolicy: IfNotPresent
+      tag: "1.1.6"
+    resources: {}
+      # requests:
+      #   cpu: "100m"
+      #   memory: "100Mi"
+      # limits:
+      #   cpu: "100m"
+      #   memory: "100Mi"

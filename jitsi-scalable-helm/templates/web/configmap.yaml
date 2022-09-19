@@ -1,0 +1,13 @@
+{{- if .Values.web.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "jitsi.fullname" . }}-web
+  labels:
+    {{- include "jitsi.labels" . | nindent 4 }}
+data:
+  {{- range .Values.web.extraFiles }}
+  {{ .name }}: |
+    {{- .content | nindent 4 }}
+  {{- end }}
+{{- end }}
