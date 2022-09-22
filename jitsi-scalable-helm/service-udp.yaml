@@ -1,0 +1,21 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: my-service
+spec:
+  selector:
+    jitsi/component: jvb
+  ports:
+  - name: pod1
+    protocol: UDP
+    port: 30000
+    targetPort: 30000
+  - name: pod2
+    protocol: UDP
+    port: 30001
+    targetPort: 30001
+  - name: pod3
+    protocol: UDP
+    port: 30002
+    targetPort: 30002
+  type: LoadBalancer
