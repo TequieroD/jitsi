@@ -21,6 +21,10 @@ spec:
       {{- end }}
       protocol: UDP
       name: rtp-udp
+    - port: 30001
+      name: rtp-udp-30001
+      nodePort: 30001
+      protocol: UDP
   {{- with .Values.jvb.service.externalIPs }}
   externalIPs:
   {{ toYaml . | indent 2 | trim }}

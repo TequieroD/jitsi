@@ -1,0 +1,20 @@
+{{- if or (and (kindIs "invalid" .Values.jvb.websockets.enabled) (not .Values.jvb.useHostPort)) .Values.jvb.websockets.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "jitsi-meet.jvb2.fullname" . }}
+  annotations:
+  {{- range $key, $value := .Values.jvb.service.annotations }}
+    {{ $key }}: {{ $value | quote }}
+  {{- end }}
+  labels:
+    {{- include "jitsi-meet.jvb2.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9090
+      protocol: TCP
+      name: colibri-ws-tcp
+  selector:
+    {{- include "jitsi-meet.jvb2.selectorLabels" . | nindent 4 }}
+{{- end }}
