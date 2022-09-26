@@ -21,6 +21,7 @@ spec:
       {{- range $label, $value := mergeOverwrite .Values.global.podLabels .Values.jvb.podLabels }}
         {{ $label }}: {{ $value }}
       {{- end }}
+        app.service: jvb
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/jvb2/configmap.yaml") . | sha256sum }}
         checksum/secret: {{ include (print $.Template.BasePath "/jvb2/xmpp-secret.yaml") . | sha256sum }}

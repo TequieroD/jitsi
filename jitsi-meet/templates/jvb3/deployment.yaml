@@ -2,9 +2,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "jitsi-meet.jvb.fullname" . }}
+  name: {{ include "jitsi-meet.jvb3.fullname" . }}
   labels:
-    {{- include "jitsi-meet.jvb.labels" . | nindent 4 }}
+    {{- include "jitsi-meet.jvb3.labels" . | nindent 4 }}
   {{- with .Values.jvb.annotations }}
   annotations:
     {{ toYaml . | nindent 4 }}
@@ -13,18 +13,18 @@ spec:
   replicas: {{ .Values.jvb.replicaCount }}
   selector:
     matchLabels:
-      {{- include "jitsi-meet.jvb.selectorLabels" . | nindent 6 }}
+      {{- include "jitsi-meet.jvb3.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "jitsi-meet.jvb.selectorLabels" . | nindent 8 }}
+        {{- include "jitsi-meet.jvb3.selectorLabels" . | nindent 8 }}
       {{- range $label, $value := mergeOverwrite .Values.global.podLabels .Values.jvb.podLabels }}
         {{ $label }}: {{ $value }}
       {{- end }}
         app.service: jvb
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/jvb/configmap.yaml") . | sha256sum }}
-        checksum/secret: {{ include (print $.Template.BasePath "/jvb/xmpp-secret.yaml") . | sha256sum }}
+        checksum/config: {{ include (print $.Template.BasePath "/jvb3/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/jvb3/xmpp-secret.yaml") . | sha256sum }}
         {{- if and .Values.jvb.metrics.enabled  .Values.jvb.metrics.prometheusAnnotations  }}
         prometheus.io/port: "9888"
         prometheus.io/scrape: "true"
@@ -54,6 +54,8 @@ spec:
           - configMapRef:
               name: {{ include "jitsi-meet.jvb.fullname" . }}
           env:
+          - name: JVB_PORT
+            value: '30002'
           {{- if or .Values.jvb.useNodeIP .Values.jvb.publicIP }}
           - name: DOCKER_HOST_ADDRESS
             {{- if .Values.jvb.publicIP }}
@@ -67,7 +69,7 @@ spec:
           {{- if .Values.jvb.websockets.enabled }}
           - name: JVB_WS_SERVER_ID
             {{- if eq $serverID "service" }}
-            value: {{ include "jitsi-meet.jvb.fullname" . }}.{{ .Release.Namespace }}.svc
+            value: {{ include "jitsi-meet.jvb3.fullname" . }}.{{ .Release.Namespace }}.svc
             {{- else if eq $serverID "podIP" }}
             valueFrom:
               fieldRef:
@@ -87,8 +89,8 @@ spec:
                 fieldPath: status.podIP
           {{- end }}
           ports:
-            - name: rtp-udp
-              containerPort: {{ .Values.jvb.UDPPort }}
+            - name: rtp-udp-30002
+              containerPort: 30002
               {{- if .Values.jvb.useHostPort }}
               hostPort: {{ .Values.jvb.UDPPort }}
               {{- end }}

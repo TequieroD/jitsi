@@ -25,10 +25,14 @@ spec:
       name: rtp-udp-30001
       nodePort: 30001
       protocol: UDP
+    - port: 30002
+      name: rtp-udp-30002
+      nodePort: 30002
+      protocol: UDP
   {{- with .Values.jvb.service.externalIPs }}
   externalIPs:
   {{ toYaml . | indent 2 | trim }}
   {{- end }}
   selector:
-    {{- include "jitsi-meet.jvb.selectorLabels" . | nindent 4 }}
+    app.service: jvb
 {{- end }}
