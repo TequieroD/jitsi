@@ -88,6 +88,8 @@ spec:
               fieldRef:
                 fieldPath: status.podIP
           {{- end }}
+          - name: JVB_AUTH_USER
+            value: "{{ .Values.jvb3.xmpp.user  }}"
           ports:
             - name: rtp-udp-30002
               containerPort: 30002
