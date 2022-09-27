@@ -141,7 +141,7 @@ jvb:
     ## Annotations to be added to the service (if LoadBalancer is used)
     ##
     annotations: {}
-  publicIP: 34.132.28.202
+  publicIP: 34.71.118.40
   breweryMuc: jvbbrewery
 
   livenessProbe:
@@ -280,6 +280,9 @@ prosody:
       name: '{{ include "prosody.fullname" . }}-jvb'
   - configMapRef:
       name: '{{ include "prosody.fullname" . }}-common'
+  extraEnvs:
+  - name: JVB_AUTH_USER
+    value: "jvb2"
   ## Uncomment this if you want to use jibri:
   # - secretRef:
   #     name: '{{ include "prosody.fullname" . }}-jibri'
@@ -293,12 +296,12 @@ jvb2:
     repository: jitsi/jvb
 
   xmpp:
-    user: jvb
+    user: jvb2
     password:
 
   stunServers: 'meet-jit-si-turnrelay.jitsi.net:443'
   useHostPort: false
-  UDPPort: 30000
+  UDPPort: 30001
   service:
     enabled: 'false'
 

@@ -17,17 +17,13 @@ spec:
   ports:
     - port: {{ default 10000 .Values.jvb.UDPPort }}
       {{- if or (eq .Values.jvb.service.type "NodePort") (eq .Values.jvb.service.type "LoadBalancer") }}
-      nodePort: {{ .Values.jvb.UDPPort }}
+      #      nodePort: {{ .Values.jvb.UDPPort }}
       {{- end }}
       protocol: UDP
       name: rtp-udp
     - port: 30001
       name: rtp-udp-30001
-      nodePort: 30001
-      protocol: UDP
-    - port: 30002
-      name: rtp-udp-30002
-      nodePort: 30002
+        #      nodePort: 30001
       protocol: UDP
   {{- with .Values.jvb.service.externalIPs }}
   externalIPs:
