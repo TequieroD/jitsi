@@ -141,7 +141,7 @@ jvb:
     ## Annotations to be added to the service (if LoadBalancer is used)
     ##
     annotations: {}
-  publicIP: 34.69.241.219
+  publicIP: 34.71.48.61
   breweryMuc: jvbbrewery
 
   livenessProbe:
