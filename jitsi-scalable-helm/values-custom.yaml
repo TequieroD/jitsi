@@ -18,7 +18,7 @@ global:
   # Jitsi Docker environment. For more options checkout .env.example 
   # from this repo: https://github.com/jitsi/docker-jitsi-meet
   env: 
-    JVB_WS_DOMAIN: ws.meet.dennychen.tw
+    JVB_WS_DOMAIN: meet.dennychen.tw
     PUBLIC_URL: https://meet.dennychen.tw
 
     ENABLE_AUTH: 0
@@ -430,7 +430,7 @@ jvb:
   enabled: true
 
   # Number of JVB for each shard if you don't want autoscaling
-  replicaCount: 5
+  replicaCount: 1
 
   image:
     repository: jitsi/jvb
@@ -476,17 +476,17 @@ jvb:
       #    hosts:
       #      - ws.meet.example.com
 
-  resources: {}
-    # requests:
-    #   cpu: "1500m"
-    #   memory: "1000Mi"
-    # limits:
-    #   cpu: "8000m"
-    #   memory: "1000Mi"
+  resources: 
+    requests:
+      cpu: "1500m"
+      memory: "1000Mi"
+    limits:
+      cpu: "8000m"
+      memory: "1000Mi"
 
   # JVB autoscaling config. Checkout README.md for more detail on how each JVB's NodePort is calculated
   autoscaling:
-    enabled: false
+    enabled: true
     minReplicas: 1
     maxReplicas: 10
     targetCPUUtilizationPercentage: 80
