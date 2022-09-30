@@ -76,19 +76,19 @@ global:
         # bosh-secure:
         # xmpp-s2s:
 
-    # shard-1:
+    shard-1:
     #   # JVB specific shard configs
-    #   xmppServer: # Overrides XMPP_SERVER for jvb on this shard
-    #   jvbBasePort: 31000 # Base nodeport for jvb on this shard
-    #   jvbWebsocketBasePorts: # Base nodeport to expose colibri websocket
-    #     http: 
+      xmppServer: # Overrides XMPP_SERVER for jvb on this shard
+      jvbBasePort: 31000 # Base nodeport for jvb on this shard
+      jvbWebsocketBasePorts: # Base nodeport to expose colibri websocket
+        http: 
     #     # admin:
 
     #   # Prosody specific shard configs
-    #   prosodyNodePorts: # Assign nodeport to expose prosody
-    #     bosh-insecure: 
-    #     xmpp-c2s:
-    #     xmpp-component:
+      prosodyNodePorts: # Assign nodeport to expose prosody
+        bosh-insecure: 
+        xmpp-c2s:
+        xmpp-component:
     #     # bosh-secure:
     #     # xmpp-s2s:
 
@@ -478,10 +478,10 @@ jvb:
 
   resources: 
     requests:
-      cpu: "1500m"
-      memory: "1000Mi"
+      cpu: "200m"
+      memory: "200Mi"
     limits:
-      cpu: "8000m"
+      cpu: "1000m"
       memory: "1000Mi"
 
   # JVB autoscaling config. Checkout README.md for more detail on how each JVB's NodePort is calculated
