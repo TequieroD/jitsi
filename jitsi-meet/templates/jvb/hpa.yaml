@@ -1,0 +1,40 @@
+{{- if and .Values.jvb.enabled .Values.jvb.autoscaling.enabled }}
+{{- range $shardName, $shardConfig := .Values.global.shards }}
+{{- $fullShardName := include "jitsi-meet.jvb.fullShardName" (dict "root" $ "shardName" $shardName) -}}
+{{- with $ }}
+---
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ $fullShardName }}-jvb
+  labels:
+    {{- include "jitsi-meet.jvb.labels" . | nindent 4 }}
+    jitsi/component: jvb
+    jitsi/shard: "{{ $shardName }}"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: {{ $fullShardName }}-jvb
+  minReplicas: {{ .Values.jvb.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.jvb.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.jvb.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.jvb.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.jvb.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilitzation
+          averageUtilization: {{ .Values.jvb.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -11,10 +11,43 @@ fullnameOverride: ""
 
 enableAuth: false
 enableGuests: true
+JVB_WS_DOMAIN: meet.dennychen.tw
 publicURL: "https://jitsi.dennychen.tw"
+
+ENABLE_AUTH: 0
+ENABLE_GUESTS: 1
+ENABLE_COLIBRI_WEBSOCKET: 1
+GLOBAL_CONFIG: statistics = "internal";\nstatistics_interval = 15;
+GLOBAL_MODULES: prometheus,measure_stanza_counts,measure_client_presence
+XMPP_MUC_MODULES: muc_meeting_id,muc_domain_mapper
+
+JIBRI_BREWERY_MUC: jibribrewery
+JIBRI_RECORDER_USER: recorder
+JIBRI_XMPP_USER: jibri
+
+JICOFO_AUTH_USER: focus
+
+JIGASI_BREWERY_MUC: jigasibrewery
+JIGASI_XMPP_USER: jigasi
+
+JVB_AUTH_USER: jvb
+JVB_BREWERY_MUC: jvbbrewery
+JVB_ENABLE_APIS: colibri,rest
 
 tz: Europe/Amsterdam
 
+# Same as above but for storing secrets
+secretEnvs: 
+  JIBRI_RECORDER_PASSWORD: 55053500c942d95cfa4687ec5fd463b8
+  JIBRI_XMPP_PASSWORD: 26244b827895fb68e2e4cc91c7965caa
+  JICOFO_AUTH_PASSWORD: 1ff0db6ac65d5d70c34da21e8ccc468f
+  JIGASI_XMPP_PASSWORD: 73956a0d757eca517b59b4cfb4c83acb
+  JVB_AUTH_PASSWORD: 567363f4e762aa79f9980618dd48f15a
+  JVB_STUN_SERVERS: meet-jit-si-turnrelay.jitsi.net:443
+
+  # Any env contains secret should be placed here. Check docker repo for more env: https://github.com/jitsi/docker-jitsi-meet
+  # JWT_APP_SECRET: my_jitsi_app_secret
+  
 image:
   pullPolicy: IfNotPresent
 
@@ -123,6 +156,8 @@ jicofo:
   extraEnvs: {}
 
 jvb:
+  enabled: true
+
   replicaCount: 1
   image:
     repository: jitsi/jvb
@@ -135,13 +170,11 @@ jvb:
   useHostPort: false
   UDPPort: 30000
   service:
-    enabled:
-    type: LoadBalancer
-    externalIPs: []
-    ## Annotations to be added to the service (if LoadBalancer is used)
-    ##
+    enabled: true
+    port: 80
+    type: NodePort
     annotations: {}
-  publicIP: 34.71.48.61
+
   breweryMuc: jvbbrewery
 
   livenessProbe:
@@ -153,6 +186,22 @@ jvb:
       path: /about/health
       port: 8080
 
+  # Expose directly udp port as NodePort.
+  #udp:
+  #  service:
+  #    enabled: true
+  #    annotations: {}
+
+  # Expose websocket
+  #websocket:
+  #  service:
+  #    enabled: true
+  #    type: ClusterIP
+  #    annotations: {}
+  #    ports:
+  #      http: 9090
+  #      # admin: 8080
+
   podLabels: {}
   podAnnotations: {}
   podSecurityContext: {}
@@ -162,6 +211,15 @@ jvb:
   tolerations: []
   affinity: {}
   extraEnvs: {}
+
+  # Time to wait for JVB to gracefully stop. It depends on your room duration.
+  terminationGracePeriodSeconds: 3600
+  
+  # Expose directly udp port as NodePort.
+  udp:
+    service:
+      enabled: true
+      annotations: {}
 
   websockets:
     ## Set to 'true' to enable Colibri WebSocket support in JVB:
@@ -198,6 +256,31 @@ jvb:
         cpu: 20m
         memory: 32Mi
   
+  resources: 
+    requests:
+      cpu: "200m"
+      memory: "200Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1000Mi"
+
+  # JVB autoscaling config. Checkout README.md for more detail on how each JVB's NodePort is calculated
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  # Time to wait for JVB to gracefully stop. It depends on your room duration.
+  terminationGracePeriodSeconds: 3600
+
 octo:
   enabled: false
 
@@ -290,102 +373,80 @@ prosody:
     repository: jitsi/prosody
     tag: 'stable-7648-4'
 
-jvb2:
-  replicaCount: 1
-  image:
-    repository: jitsi/jvb
-
-  xmpp:
-    user: jvb
-    password:
-
-  stunServers: 'meet-jit-si-turnrelay.jitsi.net:443'
-  useHostPort: false
-  UDPPort: 30001
-  service:
-    enabled: 'false'
-
-  breweryMuc: jvbbrewery
-
-  livenessProbe:
-    httpGet:
-      path: /about/health
-      port: 8080
-  readinessProbe:
-    httpGet:
-      path: /about/health
-      port: 8080
-
-  podLabels: {}
+# HAproxy specific configurations, used to load balance between shards
+haproxy:
+  enabled: true
+  image: 
+    repository: haproxy
+    pullPolicy: IfNotPresent
+    tag: ""
+  imagePullSecrets: []
   podAnnotations: {}
-  podSecurityContext: {}
-  securityContext: {}
+
+  service:
+    type: ClusterIP
+    annotations: {}
+    port: 80
+    # nodePort: 32080
+
+  # Expose this as your web domain
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: chart-example.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
   resources: {}
+    # limits:
+    #   memory: 300Mi
+    #   cpu: 400m
+    # requests:
+    #   memory: 300Mi
+    #   cpu: 400m
   nodeSelector: {}
   tolerations: []
   affinity: {}
-  extraEnvs: {}
 
-  websockets:
-    ## Set to 'true' to enable Colibri WebSocket support in JVB:
-    enabled: true
-    ## Uncomment this to set JVB server ID manually,
-    ## Or use one of pre-defined values:
-    ## * "podIP" will fetch JVB pod's IP address from K8s metadata;
-    ## * "service" will use JVB service name generated by Helm.
-    ##
-    ## Don't forget to set `web.resolverIP` to your cluster's
-    ## DNS service IP when setting this to "service"!
-    ##
-    ## (default is "podIP")
-    # serverID: podIP
+  # Shard configs. To add new shard just duplicate this `shard-0` block and rename it to shard-1, shard-2,...
+  shards:
+    shard-0:
+      # JVB specific shard configs
+      xmppServer: # Overrides XMPP_SERVER for jvb on this shard
+      jvbBasePort: 30000 # Base nodeport for jvb on this shard
+      jvbWebsocketBasePorts: # Base nodeport to expose colibri websocket
+        http:
+        # admin:
 
-jvb3:
-  replicaCount: 1
-  image:
-    repository: jitsi/jvb
+      # Prosody specific shard configs
+      prosodyNodePorts: # Assign nodeport to expose prosody
+        bosh-insecure:
+        xmpp-c2s:
+        xmpp-component:
+        # bosh-secure:
+        # xmpp-s2s:
 
-  xmpp:
-    user: jvb
-    password:
+    shard-1:
+    #   # JVB specific shard configs
+      xmppServer: # Overrides XMPP_SERVER for jvb on this shard
+      jvbBasePort: 31000 # Base nodeport for jvb on this shard
+      jvbWebsocketBasePorts: # Base nodeport to expose colibri websocket
+        http: 
+    #     # admin:
 
-  stunServers: 'meet-jit-si-turnrelay.jitsi.net:443'
-  useHostPort: false
-  UDPPort: 30002
-  service:
-    enabled: 'false'
-
-  breweryMuc: jvbbrewery
-
-  livenessProbe:
-    httpGet:
-      path: /about/health
-      port: 8080
-  readinessProbe:
-    httpGet:
-      path: /about/health
-      port: 8080
-
-  podLabels: {}
-  podAnnotations: {}
-  podSecurityContext: {}
-  securityContext: {}
-  resources: {}
-  nodeSelector: {}
-  tolerations: []
-  affinity: {}
-  extraEnvs: {}
-
-  websockets:
-    ## Set to 'true' to enable Colibri WebSocket support in JVB:
-    enabled: true
-    ## Uncomment this to set JVB server ID manually,
-    ## Or use one of pre-defined values:
-    ## * "podIP" will fetch JVB pod's IP address from K8s metadata;
-    ## * "service" will use JVB service name generated by Helm.
-    ##
-    ## Don't forget to set `web.resolverIP` to your cluster's
-    ## DNS service IP when setting this to "service"!
-    ##
-    ## (default is "podIP")
-    # serverID: podIP
+    #   # Prosody specific shard configs
+      prosodyNodePorts: # Assign nodeport to expose prosody
+        bosh-insecure: 
+        xmpp-c2s:
+        xmpp-component:
+    #     # bosh-secure:
+    #     # xmpp-s2s:
