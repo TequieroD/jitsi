@@ -1,9 +1,0 @@
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRouteUDP
-metadata:
-  name: myjitsi
-spec:
-  routes:
-    - services:
-      - name: myjitsi-jitsi-meet-jvb
-        port: 10000/udp
