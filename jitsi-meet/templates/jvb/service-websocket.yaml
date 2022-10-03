@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "jitsi-meet.jvb.fullname" . }}
+  name: {{ include "jitsi-meet.jvb.fullname" . }}-websocket
   annotations:
   {{- range $key, $value := .Values.jvb.service.annotations }}
     {{ $key }}: {{ $value | quote }}
@@ -10,17 +10,11 @@ metadata:
   labels:
     {{- include "jitsi-meet.jvb.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.jvb.service.type }}
-  {{- with .Values.jvb.service.LoadbalancerIP }}
-  loadBalancerIP: {{ . }}
-  {{- end }}
+  type: ClusterIP
   ports:
-    - port: {{ default 10000 .Values.jvb.UDPPort }}
-      {{- if or (eq .Values.jvb.service.type "NodePort") (eq .Values.jvb.service.type "LoadBalancer") }}
-      nodePort: {{ .Values.jvb.UDPPort }}
-      {{- end }}
-      protocol: UDP
-      name: rtp-udp
+    - port: 9090
+      protocol: TCP
+      name: colibri-ws-tcp
   {{- with .Values.jvb.service.externalIPs }}
   externalIPs:
   {{ toYaml . | indent 2 | trim }}
