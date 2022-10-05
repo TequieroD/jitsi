@@ -1,0 +1,154 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    checksum/config: 68aff940aab6f11c5329cec61880b039233861e29c9b48ee74a7d5a9c318750f
+    checksum/secret: b24dec64fc8db11f8fc4333b90c9334f399890fed78ec97e78b1d97ffe3c8790
+  creationTimestamp: "2022-10-05T15:15:12Z"
+  generateName: myjitsi-jitsi-meet-jvb-776f86bb8f-
+  labels:
+    app.kubernetes.io/component: jvb
+    app.kubernetes.io/instance: myjitsi
+    app.kubernetes.io/name: jitsi-meet
+    app.service: jvb
+    pod-template-hash: 776f86bb8f
+  name: myjitsi-jitsi-meet-jvb-776f86bb8f-2prq5
+  namespace: default
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: myjitsi-jitsi-meet-jvb-776f86bb8f
+    uid: ddfd2d71-bf79-4e82-b240-c209a7d61545
+  resourceVersion: "40755"
+  uid: e74888fc-fb1b-49e8-9633-587193872c80
+spec:
+  containers:
+  - env:
+    - name: DOCKER_HOST_ADDRESS
+      value: 104.198.244.99
+    - name: JVB_WS_SERVER_ID
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    envFrom:
+    - secretRef:
+        name: myjitsi-prosody-jvb
+    - configMapRef:
+        name: myjitsi-prosody-common
+    - configMapRef:
+        name: myjitsi-jitsi-meet-jvb
+    image: jitsi/jvb:stable-7648-4
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /about/health
+        port: 8080
+        scheme: HTTP
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 1
+    name: jitsi-meet
+    ports:
+    - containerPort: 30000
+      name: rtp-udp
+      protocol: UDP
+    - containerPort: 9090
+      name: colibri-ws-tcp
+      protocol: TCP
+    readinessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /about/health
+        port: 8080
+        scheme: HTTP
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 1
+    resources: {}
+    securityContext: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-5thwh
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: gke-cluster-1-default-pool-dd243b79-sf5n
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: myjitsi-jitsi-meet
+  serviceAccountName: myjitsi-jitsi-meet
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: kube-api-access-5thwh
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2022-10-05T15:15:12Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2022-10-05T15:15:32Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2022-10-05T15:15:32Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2022-10-05T15:15:12Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://9457dc9a069483eab540ee3a54f1e692f0097d806d1cb1c4923faac40eb51cd4
+    image: docker.io/jitsi/jvb:stable-7648-4
+    imageID: docker.io/jitsi/jvb@sha256:59f8f94e158f7b4cb04a68963295e5ac1e1ef981506e6a393fca95567423c431
+    lastState: {}
+    name: jitsi-meet
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2022-10-05T15:15:15Z"
+  hostIP: 10.128.0.2
+  phase: Running
+  podIP: 10.4.0.9
+  podIPs:
+  - ip: 10.4.0.9
+  qosClass: BestEffort
+  startTime: "2022-10-05T15:15:12Z"
