@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "jitsi.fullname" . }}-haproxy
+  name: {{ include "jitsi-meet.fullname" . }}-haproxy
   labels:
-    {{- include "jitsi.labels" . | nindent 4 }}
+    {{- include "jitsi-meet.labels" . | nindent 4 }}
     jitsi/component: haproxy
 data:
   haproxy.cfg: |
@@ -63,5 +63,5 @@ data:
       acl room_found urlp(room) -m found
       stick-table type string len 128 size 2k expire 1d peers mypeers srvkey addr
       stick on hdr(Room) if room_found
-      server-template shard 0-{{ len (keys .Values.global.shards) }} _http._tcp.{{ include "jitsi.fullname" . }}-web-headless.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.web.service.port }} check resolvers kube-dns init-addr none
+      server-template shard 0-{{ len (keys .Values.global.shards) }} _http._tcp.{{ include "jitsi-meet.fullname" . }}-web-headless.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.web.service.port }} check resolvers kube-dns init-addr none
 {{- end }}  

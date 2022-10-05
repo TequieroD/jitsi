@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "jitsi.fullname" . }}
+  name: {{ include "jitsi-meet.fullname" . }}
   labels:
-    {{- include "jitsi.labels" . | nindent 4 }}
+    {{- include "jitsi-meet.labels" . | nindent 4 }}
 data:
-  XMPP_DOMAIN: {{ include "jitsi.xmpp.domain" . }}
-  XMPP_MUC_DOMAIN: {{ .Values.global.xmpp.muxDomain | default (printf "muc.%s" (include "jitsi.xmpp.domain" .)) }}
-  XMPP_AUTH_DOMAIN: {{ .Values.global.xmpp.authDomain | default (printf "auth.%s" (include "jitsi.xmpp.domain" .)) }}
-  XMPP_GUEST_DOMAIN: {{ .Values.global.xmpp.guestDomain | default (printf "guest.%s" (include "jitsi.xmpp.domain" .)) }}
-  XMPP_RECORDER_DOMAIN: {{ .Values.global.xmpp.recorderDomain | default (printf "recorder.%s" (include "jitsi.xmpp.domain" .)) }}
-  XMPP_INTERNAL_MUC_DOMAIN: {{ .Values.global.xmpp.internalMucDomain | default (printf "internal-muc.%s" (include "jitsi.xmpp.domain" .)) }}
+  XMPP_DOMAIN: {{ include "jitsi-meet.xmpp.domain" . }}
+  XMPP_MUC_DOMAIN: {{ .Values.global.xmpp.muxDomain | default (printf "muc.%s" (include "jitsi-meet.xmpp.domain" .)) }}
+  XMPP_AUTH_DOMAIN: {{ .Values.global.xmpp.authDomain | default (printf "auth.%s" (include "jitsi-meet.xmpp.domain" .)) }}
+  XMPP_GUEST_DOMAIN: {{ .Values.global.xmpp.guestDomain | default (printf "guest.%s" (include "jitsi-meet.xmpp.domain" .)) }}
+  XMPP_RECORDER_DOMAIN: {{ .Values.global.xmpp.recorderDomain | default (printf "recorder.%s" (include "jitsi-meet.xmpp.domain" .)) }}
+  XMPP_INTERNAL_MUC_DOMAIN: {{ .Values.global.xmpp.internalMucDomain | default (printf "internal-muc.%s" (include "jitsi-meet.xmpp.domain" .)) }}
   {{- range $key, $value := .Values.global.env }}
   {{- if not (kindIs "invalid" $value) }}
   {{ $key }}: {{ if typeIs "string" $value}}{{ tpl $value $ | quote }}{{ else }}{{ $value | quote }}{{ end }}

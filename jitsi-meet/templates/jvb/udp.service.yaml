@@ -23,14 +23,15 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  type: NodePort
+  type: LoadBalancer
+  loadBalancerIP: 34.171.114.183
   externalTrafficPolicy: "Local"
   ports:
     {{- $port := add $shardConfig.jvbBasePort $replica }}
     - port: {{ $port }}
       targetPort: {{ $port }}
       protocol: UDP
-      nodePort: {{ $port }}
+      #nodePort: {{ $port }}
       name: {{ $fullShardName }}-jvb-udp-{{ $replica }}
   selector:
     {{- include "jitsi-meet.jvb.selectorLabels" . | nindent 4 }}

@@ -1,4 +1,4 @@
-{{- if and .Values.jvb.enabled .Values.jvb.websocket.service.enabled }}
+{{- if and .Values.jvb.enabled .Values.jvb.websockets.service.enabled }}
 {{- range $shardName, $shardConfig := .Values.global.shards }}
 {{- $fullShardName := include "jitsi-meet.jvb.fullShardName" (dict "root" $ "shardName" $shardName) -}}
 {{- with $ }}
@@ -18,15 +18,15 @@ metadata:
     jitsi/shard: "{{ $shardName }}"
     jitsi/replica: "{{ $replica }}"
     {{- include "jitsi-meet.jvb.labels" . | nindent 4 }}
-  {{- with .Values.jvb.websocket.service.annotations }}
+  {{- with .Values.jvb.websockets.service.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  type: {{ .Values.jvb.websocket.service.type }}
+  type: {{ .Values.jvb.websockets.service.type }}
   ports:
-    {{- $setNodePorts := (or (eq .Values.jvb.websocket.service.type "NodePort") (eq .Values.jvb.websocket.service.type "LoadBalancer")) }}
-    {{- range $key, $value := .Values.jvb.websocket.service.ports }}
+    {{- $setNodePorts := (or (eq .Values.jvb.websockets.service.type "NodePort") (eq .Values.jvb.websockets.service.type "LoadBalancer")) }}
+    {{- range $key, $value := .Values.jvb.websockets.service.ports }}
     - port: {{ $value }}
       targetPort: {{ $key }}
       protocol: TCP

@@ -5,6 +5,56 @@
 global:
   podLabels: {}
   podAnnotations: {}
+
+  xmpp:
+    domain: meet.jitsi
+    authDomain:
+    mucDomain:
+    internalMucDomain:
+    guestDomain:
+
+  secretEnvs: 
+    JIBRI_RECORDER_PASSWORD: 55053500c942d95cfa4687ec5fd463b8
+    JIBRI_XMPP_PASSWORD: 26244b827895fb68e2e4cc91c7965caa
+    JICOFO_AUTH_PASSWORD: 1ff0db6ac65d5d70c34da21e8ccc468f
+    JIGASI_XMPP_PASSWORD: 73956a0d757eca517b59b4cfb4c83acb
+    JVB_AUTH_PASSWORD: 567363f4e762aa79f9980618dd48f15a
+    JVB_STUN_SERVERS: meet-jit-si-turnrelay.jitsi.net:443
+
+  # Shard configs. To add new shard just duplicate this `shard-0` block and rename it to shard-1, shard-2,...
+  shards:
+    shard-0:
+      # JVB specific shard configs
+      xmppServer: # Overrides XMPP_SERVER for jvb on this shard
+      jvbBasePort: 30000 # Base nodeport for jvb on this shard
+      jvbWebsocketBasePorts: # Base nodeport to expose colibri websocket
+        http:
+        # admin:
+
+      # Prosody specific shard configs
+      prosodyNodePorts: # Assign nodeport to expose prosody
+        bosh-insecure:
+        xmpp-c2s:
+        xmpp-component:
+        # bosh-secure:
+        # xmpp-s2s:
+
+    #shard-1:
+    #  # JVB specific shard configs
+    #  xmppServer: # Overrides XMPP_SERVER for jvb on this shard
+    #  jvbBasePort: 31000 # Base nodeport for jvb on this shard
+    #  jvbWebsocketBasePorts: # Base nodeport to expose colibri websocket
+    #    http:
+    #     # admin:
+
+    #   # Prosody specific shard configs
+    #  prosodyNodePorts: # Assign nodeport to expose prosody
+    #    bosh-insecure:
+    #    xmpp-c2s:
+    #    xmpp-component:
+    #     # bosh-secure:
+    #     # xmpp-s2s:
+
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
@@ -158,7 +208,7 @@ jicofo:
 jvb:
   enabled: true
 
-  replicaCount: 1
+  replicaCount: 2
   image:
     repository: jitsi/jvb
 
@@ -223,7 +273,12 @@ jvb:
 
   websockets:
     ## Set to 'true' to enable Colibri WebSocket support in JVB:
-    enabled: true
+    service:
+      enabled: true
+      type: ClusterIP
+      ports:
+        http: 9090
+      annotations: {}
     ## Uncomment this to set JVB server ID manually,
     ## Or use one of pre-defined values:
     ## * "podIP" will fetch JVB pod's IP address from K8s metadata;
@@ -234,6 +289,20 @@ jvb:
     ##
     ## (default is "podIP")
     # serverID: podIP
+
+    # Enable this ingress to auto expose colibri websocket and load balance between jvbs
+    ingress:
+      enabled: false
+      className: ""
+      annotations: {}
+        # kubernetes.io/ingress.class: nginx
+        # kubernetes.io/tls-acme: "true"
+      hosts:
+        - ws.meet.example.com
+      tls: []
+      #  - secretName: chart-example-tls
+      #    hosts:
+      #      - ws.meet.example.com
 
   metrics:
     enabled: false
@@ -268,7 +337,7 @@ jvb:
   autoscaling:
     enabled: true
     minReplicas: 1
-    maxReplicas: 10
+    maxReplicas: 3
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
 
@@ -280,6 +349,37 @@ jvb:
 
   # Time to wait for JVB to gracefully stop. It depends on your room duration.
   terminationGracePeriodSeconds: 3600
+
+  allowedEnv:
+    - ENABLE_COLIBRI_WEBSOCKET
+    - ENABLE_OCTO
+    - JVB_AUTH_USER
+    - JVB_AUTH_PASSWORD
+    - JVB_BREWERY_MUC
+    - JVB_STUN_SERVERS
+    - JVB_ENABLE_APIS
+    - JVB_WS_DOMAIN
+    - PUBLIC_URL
+    - JVB_OCTO_BIND_ADDRESS
+    - JVB_OCTO_PUBLIC_ADDRESS
+    - JVB_OCTO_BIND_PORT
+    - JVB_OCTO_REGION
+    - TZ
+
+  # Enable prometheus exporter sidecar for JVBs
+  monitoring:
+    enabled: false
+    image:
+      repository: systemli/prometheus-jitsi-meet-exporter
+      pullPolicy: IfNotPresent
+      tag: "1.1.6"
+    resources: {}
+      # requests:
+      #   cpu: "100m"
+      #   memory: "100Mi"
+      # limits:
+      #   cpu: "100m"
+      #   memory: "100Mi"
 
 octo:
   enabled: false
@@ -375,7 +475,7 @@ prosody:
 
 # HAproxy specific configurations, used to load balance between shards
 haproxy:
-  enabled: true
+  enabled: false
   image: 
     repository: haproxy
     pullPolicy: IfNotPresent
@@ -416,37 +516,3 @@ haproxy:
   nodeSelector: {}
   tolerations: []
   affinity: {}
-
-  # Shard configs. To add new shard just duplicate this `shard-0` block and rename it to shard-1, shard-2,...
-  shards:
-    shard-0:
-      # JVB specific shard configs
-      xmppServer: # Overrides XMPP_SERVER for jvb on this shard
-      jvbBasePort: 30000 # Base nodeport for jvb on this shard
-      jvbWebsocketBasePorts: # Base nodeport to expose colibri websocket
-        http:
-        # admin:
-
-      # Prosody specific shard configs
-      prosodyNodePorts: # Assign nodeport to expose prosody
-        bosh-insecure:
-        xmpp-c2s:
-        xmpp-component:
-        # bosh-secure:
-        # xmpp-s2s:
-
-    shard-1:
-    #   # JVB specific shard configs
-      xmppServer: # Overrides XMPP_SERVER for jvb on this shard
-      jvbBasePort: 31000 # Base nodeport for jvb on this shard
-      jvbWebsocketBasePorts: # Base nodeport to expose colibri websocket
-        http: 
-    #     # admin:
-
-    #   # Prosody specific shard configs
-      prosodyNodePorts: # Assign nodeport to expose prosody
-        bosh-insecure: 
-        xmpp-c2s:
-        xmpp-component:
-    #     # bosh-secure:
-    #     # xmpp-s2s:

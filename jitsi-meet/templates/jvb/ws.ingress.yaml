@@ -1,8 +1,8 @@
-{{- if .Values.jvb.websocket.ingress.enabled -}}
-{{- $svcPort := .Values.jvb.websocket.service.ports.http -}}
-{{- if and .Values.jvb.websocket.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
-  {{- if not (hasKey .Values.jvb.websocket.ingress.annotations "kubernetes.io/ingress.class") }}
-  {{- $_ := set .Values.jvb.websocket.ingress.annotations "kubernetes.io/ingress.class" .Values.jvb.websocket.ingress.className}}
+{{- if .Values.jvb.websockets.ingress.enabled -}}
+{{- $svcPort := .Values.jvb.websockets.service.ports.http -}}
+{{- if and .Values.jvb.websockets.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
+  {{- if not (hasKey .Values.jvb.websockets.ingress.annotations "kubernetes.io/ingress.class") }}
+  {{- $_ := set .Values.jvb.websockets.ingress.annotations "kubernetes.io/ingress.class" .Values.jvb.websockets.ingress.className}}
   {{- end }}
 {{- end }}
 {{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
@@ -18,17 +18,17 @@ metadata:
   labels:
     {{- include "jitsi.labels" . | nindent 4 }}
     jitsi/component: jvb
-  {{- with .Values.jvb.websocket.ingress.annotations }}
+  {{- with .Values.jvb.websockets.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if and .Values.jvb.websocket.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
-  ingressClassName: {{ .Values.jvb.websocket.ingress.className }}
+  {{- if and .Values.jvb.websockets.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ .Values.jvb.websockets.ingress.className }}
   {{- end }}
-  {{- if .Values.jvb.websocket.ingress.tls }}
+  {{- if .Values.jvb.websockets.ingress.tls }}
   tls:
-    {{- range .Values.jvb.websocket.ingress.tls }}
+    {{- range .Values.jvb.websockets.ingress.tls }}
     - hosts:
         {{- range .hosts }}
         - {{ . | quote }}
@@ -37,7 +37,7 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.jvb.websocket.ingress.hosts }}
+    {{- range .Values.jvb.websockets.ingress.hosts }}
     - host: {{ . | quote }}
       http:
         paths:

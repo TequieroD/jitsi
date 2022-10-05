@@ -50,7 +50,7 @@ spec:
       volumes:
         - name: jvb
           configMap:
-            name: {{ include "jitsi-meet.jvb.fullname" . }}-jvb
+            name: {{ include "jitsi-meet.jvb.fullname" . }}
             items:
               - key: entrypoint.sh
                 path: entrypoint.sh
@@ -135,38 +135,41 @@ spec:
             - name: JVB_WS_SERVER_ID
               valueFrom:
                 fieldRef:
-                  fieldPath: metadata.name
+                  fieldPath: status.podIP
             - name: DOCKER_HOST_ADDRESS
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.hostIP
+              #              valueFrom:
+              #                fieldRef:
+              #                  fieldPath: status.hostIP
+              value: 34.171.114.183
+            - name: JVB_WS_DOMAIN
+              value: {{ .Values.JVB_WS_DOMAIN }}
             - name: XMPP_SERVER
               value: {{ $shardConfig.xmppServer | default (printf "%s-%s" $fullShardName "prosody") | quote }}
             - name: XMPP_AUTH_DOMAIN
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "jitsi-meet.jvb.fullname" . | quote }}
+                  name: {{ include "jitsi-meet.fullname" . | quote }}
                   key: XMPP_AUTH_DOMAIN
             - name: XMPP_INTERNAL_MUC_DOMAIN
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "jitsi-meet.jvb.fullname" . | quote }}
+                  name: {{ include "jitsi-meet.fullname" . | quote }}
                   key: XMPP_INTERNAL_MUC_DOMAIN
             {{- range $key, $value := .Values.global.env }}
             {{- if has $key $.Values.jvb.allowedEnv }}
             - name: {{ $key | quote }}
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "jitsi-meet.jvb.fullname" $ | quote }}
+                  name: {{ include "jitsi-meet.fullname" $ | quote }}
                   key: {{ $key | quote }}
             {{- end }}
             {{- end }}
-            {{- range $key, $value := .Values.global.secretEnvs }}
+            {{- range $key, $value := .Values.secretEnvs }}
             {{- if has $key $.Values.jvb.allowedEnv }}
             - name: {{ $key | quote }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "jitsi-meet.jvb.fullname" $ | quote }}
+                  name: {{ include "jitsi-meet.fullname" $ | quote }}
                   key: {{ $key | quote }}
             {{- end }}
             {{- end }}
