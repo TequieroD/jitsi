@@ -1,8 +1,18 @@
 {{- if or (and (kindIs "invalid" .Values.jvb.service.enabled) (not .Values.jvb.useHostPort)) .Values.jvb.service.enabled }}
+{{- range $shardName, $shardConfig := .Values.global.shards }}
+{{- $fullShardName := include "jitsi-meet.fullShardName" (dict "root" $ "shardName" $shardName) -}}
+{{- with $ }}
+{{- $maxReplicas := .Values.jvb.replicaCount -}}
+{{- if .Values.jvb.autoscaling.enabled }}
+{{- $maxReplicas = .Values.jvb.autoscaling.maxReplicas -}}
+{{- end }}
+{{- range $replica := (untilStep 0 (int $maxReplicas) 1) }}
+{{- with $ }}
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "jitsi-meet.jvb.fullname" . }}
+  name: {{ $fullShardName }}-jvb-udp-{{ $replica }}
   annotations:
   {{- range $key, $value := .Values.jvb.service.annotations }}
     {{ $key }}: {{ $value | quote }}
@@ -15,16 +25,21 @@ spec:
   loadBalancerIP: {{ . }}
   {{- end }}
   ports:
-    - port: {{ default 10000 .Values.jvb.UDPPort }}
-      {{- if or (eq .Values.jvb.service.type "NodePort") (eq .Values.jvb.service.type "LoadBalancer") }}
-      nodePort: {{ .Values.jvb.UDPPort }}
-      {{- end }}
+    {{- $port := add $shardConfig.jvbBasePort $replica }}
+    - port: {{ $port }}
       protocol: UDP
-      name: rtp-udp
+      targetPort: {{ $port }}
   {{- with .Values.jvb.service.externalIPs }}
   externalIPs:
   {{ toYaml . | indent 2 | trim }}
   {{- end }}
   selector:
     {{- include "jitsi-meet.jvb.selectorLabels" . | nindent 4 }}
+    jitsi/component: jvb
+    jitsi/shard: "{{ $shardName }}"
+    statefulset.kubernetes.io/pod-name: "{{ $fullShardName }}-jvb-{{ $replica }}"
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
 {{- end }}

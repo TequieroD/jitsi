@@ -16,3 +16,7 @@ app.kubernetes.io/component: jvb
 {{- define "jitsi-meet.jvb.secret" -}}
 {{ include "call-nested" (list . "prosody" "prosody.fullname") }}-jvb
 {{- end -}}
+
+{{- define "jitsi-meet.fullShardName" -}}
+{{- printf "%s-%s" (include "jitsi-meet.fullname" .root | trunc 40) .shardName | trunc 55 | trimSuffix "-" }}
+{{- end }}
