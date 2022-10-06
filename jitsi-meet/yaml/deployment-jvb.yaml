@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    meta.helm.sh/release-name: myjitsi
+    meta.helm.sh/release-namespace: default
+  creationTimestamp: "2022-10-06T00:47:20Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/component: jvb
+    app.kubernetes.io/instance: myjitsi
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: jitsi-meet
+    app.kubernetes.io/version: stable-7648-4
+    helm.sh/chart: jitsi-meet-1.2.2
+  name: myjitsi-jitsi-meet-jvb
+  namespace: default
+  resourceVersion: "10331"
+  uid: d6cfd1c8-650d-4628-a08b-27605cc92beb
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: jvb
+      app.kubernetes.io/instance: myjitsi
+      app.kubernetes.io/name: jitsi-meet
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config: 68aff940aab6f11c5329cec61880b039233861e29c9b48ee74a7d5a9c318750f
+        checksum/secret: 5e9d6559f6c9c1eb7039acfabc6a65a9ad5f8e567505d3b5e2da41ae6de7b93b
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/component: jvb
+        app.kubernetes.io/instance: myjitsi
+        app.kubernetes.io/name: jitsi-meet
+        app.service: jvb
+    spec:
+      containers:
+      - env:
+        - name: DOCKER_HOST_ADDRESS
+          value: 104.198.244.99
+        - name: JVB_WS_SERVER_ID
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        envFrom:
+        - secretRef:
+            name: myjitsi-prosody-jvb
+        - configMapRef:
+            name: myjitsi-prosody-common
+        - configMapRef:
+            name: myjitsi-jitsi-meet-jvb
+        image: jitsi/jvb:stable-7648-4
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /about/health
+            port: 8080
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: jitsi-meet
+        ports:
+        - containerPort: 30000
+          name: rtp-udp
+          protocol: UDP
+        - containerPort: 9090
+          name: colibri-ws-tcp
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /about/health
+            port: 8080
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources: {}
+        securityContext: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: myjitsi-jitsi-meet
+      serviceAccountName: myjitsi-jitsi-meet
+      terminationGracePeriodSeconds: 30
+status:
+  conditions:
+  - lastTransitionTime: "2022-10-06T00:47:20Z"
+    lastUpdateTime: "2022-10-06T00:48:02Z"
+    message: ReplicaSet "myjitsi-jitsi-meet-jvb-5c5899d995" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  - lastTransitionTime: "2022-10-06T00:48:07Z"
+    lastUpdateTime: "2022-10-06T00:48:07Z"
+    message: Deployment does not have minimum availability.
+    reason: MinimumReplicasUnavailable
+    status: "False"
+    type: Available
+  observedGeneration: 1
+  replicas: 1
+  unavailableReplicas: 1
+  updatedReplicas: 1
