@@ -65,18 +65,20 @@ web:
     externalIPs: []
 
   ingress:
-    enabled: false
+    enabled: true
     # ingressClassName: "nginx-ingress-0"
-    annotations: {}
+    annotations:
+        networking.gke.io/managed-certificates: jitsi-web-certificate
+        kubernetes.io/ingress.allow-http: "false"
       # kubernetes.io/ingress.class: nginx
       # kubernetes.io/tls-acme: "true"
     hosts:
-    - host: jitsi.local
-      paths: ['/']
-    tls: []
-    #  - secretName: jitsi-web-certificate
-    #    hosts:
-    #      - jitsi.local
+      - host: jitsi.dennychen.tw
+        paths: ['/']
+    tls: 
+      - secretName: jitsi-web-certificate
+        hosts:
+          - jitsi.dennychen.tw
 
   # Useful for ingresses that don't support http-to-https redirect by themself, (namely: GKE),
   httpRedirect: false
@@ -172,12 +174,12 @@ jvb:
   service:
     enabled:
     type: LoadBalancer
-    LoadbalancerIP: 34.72.251.95
+    LoadbalancerIP: 35.239.239.155
     externalIPs: []
     ## Annotations to be added to the service (if LoadBalancer is used)
     ##
     annotations: {}
-  publicIP: 34.72.251.95
+  publicIP: 35.239.239.155
   breweryMuc: jvbbrewery
 
   livenessProbe:
@@ -224,7 +226,7 @@ jvb:
   autoscaling:
     enabled: true
     minReplicas: 1
-    maxReplicas: 10
+    maxReplicas: 6
     targetCPUUtilizationPercentage: 50
     # targetMemoryUtilizationPercentage: 80
 

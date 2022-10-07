@@ -4,6 +4,8 @@ metadata:
   name: {{ include "jitsi-meet.web.fullname" . }}
   labels:
     {{- include "jitsi-meet.web.labels" . | nindent 4 }}
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}'
 spec:
   type: {{ .Values.web.service.type }}
   ports:
