@@ -173,13 +173,14 @@ jvb:
   UDPPort: 30000
   service:
     enabled:
-    type: LoadBalancer
-    LoadbalancerIP: 35.239.239.155
+    type: NodePort
+    LoadbalancerIP: 34.71.54.172
     externalIPs: []
     ## Annotations to be added to the service (if LoadBalancer is used)
     ##
     annotations: {}
-  publicIP: 35.239.239.155
+
+  publicIP: 34.71.54.172
   breweryMuc: jvbbrewery
 
   livenessProbe:
@@ -226,7 +227,7 @@ jvb:
   autoscaling:
     enabled: true
     minReplicas: 1
-    maxReplicas: 6
+    maxReplicas: 3
     targetCPUUtilizationPercentage: 50
     # targetMemoryUtilizationPercentage: 80
 
@@ -342,3 +343,6 @@ prosody:
   image:
     repository: jitsi/prosody
     tag: 'stable-7648-4'
+
+kong:
+  enabled: true

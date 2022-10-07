@@ -29,6 +29,9 @@ spec:
     - port: {{ $port }}
       protocol: UDP
       targetPort: {{ $port }}
+      {{- if (eq .Values.jvb.service.type "NodePort") }}
+      nodePort: {{ $port }}
+      {{- end }}
   {{- with .Values.jvb.service.externalIPs }}
   externalIPs:
   {{ toYaml . | indent 2 | trim }}
