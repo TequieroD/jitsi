@@ -6,9 +6,6 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  annotations:
-    meta.helm.sh/release-name: myjitsi
-    meta.helm.sh/release-namespace: default
   generation: 1
   labels:
     {{- include "jitsi-meet.jvb.labels" . | nindent 4 }}
@@ -17,7 +14,6 @@ metadata:
         {{ toYaml . | nindent 4 }}
     {{- end }}
   name: {{ $fullShardName }}-jvb
-  namespace: default
 spec:
   podManagementPolicy: Parallel
   replicas: 1
