@@ -19,3 +19,24 @@
   echo "Visit http://127.0.0.1:8080 to use your application"
   kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:80
 {{- end }}
+
+2. Install Kong udpIngress for UDP Gateway
+{{- if .Values.kong.enabled -}}
+{{- $kong_base := printf "helm upgrade --install jitsi-gw kong/kong --set \"proxy.enabled=false\" --set \"udpProxy.enabled=true\" --set \"udpProxy.type=LoadBalancer\" --set \"udpProxy.loadBalancerIP=%s\"" .Values.jvb.service.loadBalancerIP -}}
+{{- $export := ""}}
+{{- range $shardName, $shardConfig := .Values.global.shards }}
+{{- with $ }}
+{{- $maxReplicas := .Values.jvb.replicaCount -}}
+{{- if .Values.jvb.autoscaling.enabled }}
+{{- $maxReplicas = .Values.jvb.autoscaling.maxReplicas -}}
+{{- end }}
+{{- range $replica := (untilStep 0 (int $maxReplicas) 1) }}
+{{- with $ }}
+{{- $port := add $shardConfig.jvbBasePort $replica }}
+{{- $export = printf "%s --set \"udpProxy.stream[%d].containerPort=%d\" --set \"udpProxy.stream[%d].servicePort=%d\" --set \"udpProxy.stream[%d].protocol=UDP\" " $export (int64 $replica) (int64 $port) (int64 $replica) (int64 $port) (int64 $replica) -}}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{ $kong_base }} {{ $export }}
+{{- end }}
