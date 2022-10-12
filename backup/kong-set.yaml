@@ -4,7 +4,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: jitsi-gw-kong
-  namespace: default
+  namespace: jitsi
   labels:
     app.kubernetes.io/name: kong
     helm.sh/chart: kong-2.13.1
@@ -17,7 +17,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: jitsi-gw-kong-token 
-  namespace: default
+  namespace: jitsi
   annotations:
     kubernetes.io/service-account.name: jitsi-gw-kong
 type: kubernetes.io/service-account-token
@@ -265,14 +265,14 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: jitsi-gw-kong
-    namespace: default
+    namespace: jitsi
 ---
 # Source: kong/templates/controller-rbac-resources.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: jitsi-gw-kong
-  namespace: default
+  namespace: jitsi
   labels:
     app.kubernetes.io/name: kong
     helm.sh/chart: kong-2.13.1
@@ -349,7 +349,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: jitsi-gw-kong
-  namespace: default
+  namespace: jitsi
   labels:
     app.kubernetes.io/name: kong
     helm.sh/chart: kong-2.13.1
@@ -363,14 +363,14 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: jitsi-gw-kong
-    namespace: default
+    namespace: jitsi
 ---
 # Source: kong/templates/service-kong-udp-proxy.yaml
 apiVersion: v1
 kind: Service
 metadata:
   name: jitsi-gw-kong-udp-proxy
-  namespace: default
+  namespace: jitsi
   labels:
     app.kubernetes.io/name: kong
     helm.sh/chart: kong-2.13.1
@@ -379,20 +379,26 @@ metadata:
     app.kubernetes.io/version: "3.0"
 spec:
   type: LoadBalancer
-  loadBalancerIP: 35.224.72.73
+  loadBalancerIP: {{ .Values.jvb.service.loadBalancerIP }}
   ports:
-  - name: streamudp-30000
-    port: 30000
-    targetPort: 30000
+  {{- range $shardName, $shardConfig := .Values.global.shards }}
+  {{- $fullShardName := include "jitsi-meet.fullShardName" (dict "root" $ "shardName" $shardName) -}}
+  {{- with $ }}
+  {{- $maxReplicas := .Values.jvb.replicaCount -}}
+  {{- if .Values.jvb.autoscaling.enabled }}
+  {{- $maxReplicas = .Values.jvb.autoscaling.maxReplicas -}}
+  {{- end }}
+  {{- range $replica := (untilStep 0 (int $maxReplicas) 1) }}
+  {{- with $ }}
+  {{- $port := add $shardConfig.jvbBasePort $replica }}
+  - name: streamudp-{{ $port }}
+    port: {{ $port }}
+    targetPort: {{ $port }}
     protocol: UDP
-  - name: streamudp-30001
-    port: 30001
-    targetPort: 30001
-    protocol: UDP
-  - name: streamudp-30002
-    port: 30002
-    targetPort: 30002
-    protocol: UDP
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
   selector:
     app.kubernetes.io/name: kong
     app.kubernetes.io/component: app
@@ -403,7 +409,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: jitsi-gw-kong
-  namespace:  default
+  namespace:  jitsi
   labels:
     app.kubernetes.io/name: kong
     helm.sh/chart: kong-2.13.1
@@ -500,7 +506,22 @@ spec:
         - name: KONG_STATUS_LISTEN
           value: "0.0.0.0:8100"
         - name: KONG_STREAM_LISTEN
-          value: "0.0.0.0:30000 udp, 0.0.0.0:30001 udp, 0.0.0.0:30002 udp"
+          {{- $export := ""}}
+          {{- range $shardName, $shardConfig := .Values.global.shards }}
+          {{- with $ }}
+          {{- $maxReplicas := .Values.jvb.replicaCount -}}
+          {{- if .Values.jvb.autoscaling.enabled }}
+          {{- $maxReplicas = .Values.jvb.autoscaling.maxReplicas -}}
+          {{- end }}
+          {{- range $replica := (untilStep 0 (int $maxReplicas) 1) }}
+          {{- with $ }}
+          {{- $port := add $shardConfig.jvbBasePort $replica }}
+          {{- $export = printf "%s 0.0.0.0:%d udp," $export (int64 $port) -}}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          value: "{{ $export | trim  | trimSuffix "," }}"
         volumeMounts:
         - name: jitsi-gw-kong-prefix-dir
           mountPath: /kong_prefix/
@@ -626,7 +647,22 @@ spec:
         - name: KONG_STATUS_LISTEN
           value: "0.0.0.0:8100"
         - name: KONG_STREAM_LISTEN
-          value: "0.0.0.0:30000 udp, 0.0.0.0:30001 udp, 0.0.0.0:30002 udp"
+          {{- $export := ""}}
+          {{- range $shardName, $shardConfig := .Values.global.shards }}
+          {{- with $ }}
+          {{- $maxReplicas := .Values.jvb.replicaCount -}}
+          {{- if .Values.jvb.autoscaling.enabled }}
+          {{- $maxReplicas = .Values.jvb.autoscaling.maxReplicas -}}
+          {{- end }}
+          {{- range $replica := (untilStep 0 (int $maxReplicas) 1) }}
+          {{- with $ }}
+          {{- $port := add $shardConfig.jvbBasePort $replica }}
+          {{- $export = printf "%s 0.0.0.0:%d udp," $export (int64 $port) -}}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          value: "{{ $export | trim | trimSuffix "," }}"
         - name: KONG_NGINX_DAEMON
           value: "off"
         lifecycle:
@@ -637,16 +673,23 @@ spec:
               - quit
               - --wait=15
         ports:
-        - name: streamudp-30000
-          containerPort: 30000
+        {{- range $shardName, $shardConfig := .Values.global.shards }}
+        {{- $fullShardName := include "jitsi-meet.fullShardName" (dict "root" $ "shardName" $shardName) -}}
+        {{- with $ }}
+        {{- $maxReplicas := .Values.jvb.replicaCount -}}
+        {{- if .Values.jvb.autoscaling.enabled }}
+        {{- $maxReplicas = .Values.jvb.autoscaling.maxReplicas -}}
+        {{- end }}
+        {{- range $replica := (untilStep 0 (int $maxReplicas) 1) }}
+        {{- with $ }}
+        {{- $port := add $shardConfig.jvbBasePort $replica }}
+        - name: streamudp-{{ $port }}
+          containerPort: {{ $port }}
           protocol: UDP
-        - name: streamudp-30001
-          containerPort: 30001
-          protocol: UDP
-        - name: streamudp-30002
-          containerPort: 30002
-          protocol: UDP
-        - name: status
+        {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
           containerPort: 8100
           protocol: TCP
         volumeMounts:
@@ -698,3 +741,34 @@ spec:
               path: ca.crt
             - key: namespace
               path: namespace
+---
+{{- if .Values.kong.enabled -}}
+apiVersion: configuration.konghq.com/v1beta1
+kind: UDPIngress
+metadata:
+  name: {{- include "jitsi-meet.fullname" . | nindent 4 }}-jvb-udpingress
+  labels:
+    {{- include "jitsi-meet.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: kong
+spec:
+  rules:
+{{- range $shardName, $shardConfig := .Values.global.shards }}
+{{- $fullShardName := include "jitsi-meet.fullShardName" (dict "root" $ "shardName" $shardName) -}}
+{{- with $ }}
+{{- $maxReplicas := .Values.jvb.replicaCount -}}
+{{- if .Values.jvb.autoscaling.enabled }}
+{{- $maxReplicas = .Values.jvb.autoscaling.maxReplicas -}}
+{{- end }}
+{{- range $replica := (untilStep 0 (int $maxReplicas) 1) }}
+{{- with $ }}
+{{- $port := add $shardConfig.jvbBasePort $replica }}
+  - backend:
+      serviceName: "{{ $fullShardName }}-jvb-udp-{{ $replica }}"
+      servicePort: {{ $port }}
+    port: {{ $port }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
