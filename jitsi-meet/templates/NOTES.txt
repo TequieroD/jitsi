@@ -20,9 +20,9 @@
   kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:80
 {{- end }}
 
-2. Install Kong udpIngress for UDP Gateway
 {{- if .Values.kong.enabled -}}
-{{- $kong_base := printf "helm upgrade --install jitsi-gw kong/kong --set \"proxy.enabled=false\" --set \"udpProxy.enabled=true\" --set \"udpProxy.type=LoadBalancer\" --set \"udpProxy.loadBalancerIP=%s\"" .Values.jvb.service.loadBalancerIP -}}
+2. Install Kong UDPIngress for JVB UDP Gateway
+{{- $kong_base := printf "helm upgrade --install jitsi-gw kong --set \"proxy.enabled=false\" --set \"udpProxy.enabled=true\" --set \"udpProxy.type=LoadBalancer\" --set \"udpProxy.loadBalancerIP=%s\"" .Values.jvb.service.loadBalancerIP -}}
 {{- $export := ""}}
 {{- range $shardName, $shardConfig := .Values.global.shards }}
 {{- with $ }}

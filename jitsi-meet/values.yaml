@@ -174,13 +174,13 @@ jvb:
   service:
     enabled:
     type: NodePort
-    loadBalancerIP: 35.224.72.73
+    loadBalancerIP: 146.148.67.117
     externalIPs: []
     ## Annotations to be added to the service (if LoadBalancer is used)
     ##
     annotations: {}
 
-  publicIP: 35.224.72.73
+  publicIP: 146.148.67.117
   breweryMuc: jvbbrewery
 
   livenessProbe:

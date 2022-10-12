@@ -1,0 +1,30 @@
+{{- if .Values.kong.enabled -}}
+apiVersion: configuration.konghq.com/v1beta1
+kind: UDPIngress
+metadata:
+  name: {{- include "jitsi-meet.fullname" . | nindent 4 }}-jvb-udpingress
+  labels:
+    {{- include "jitsi-meet.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: kong
+spec:
+  rules:
+{{- range $shardName, $shardConfig := .Values.global.shards }}
+{{- $fullShardName := include "jitsi-meet.fullShardName" (dict "root" $ "shardName" $shardName) -}}
+{{- with $ }}
+{{- $maxReplicas := .Values.jvb.replicaCount -}}
+{{- if .Values.jvb.autoscaling.enabled }}
+{{- $maxReplicas = .Values.jvb.autoscaling.maxReplicas -}}
+{{- end }}
+{{- range $replica := (untilStep 0 (int $maxReplicas) 1) }}
+{{- with $ }}
+{{- $port := add $shardConfig.jvbBasePort $replica }}
+  - backend:
+      serviceName: "{{ $fullShardName }}-jvb-udp-{{ $replica }}"
+      servicePort: {{ $port }}
+    port: {{ $port }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
