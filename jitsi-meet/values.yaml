@@ -346,4 +346,4 @@ prosody:
 
 kong:
   enabled: true
-  ingress: false
+  ingress: true
