@@ -1,4 +1,4 @@
-{{- if .Values.kong.enabled -}}
+{{- if and (.Values.kong.enabled) (.Values.kong.ingress) -}}
 apiVersion: configuration.konghq.com/v1beta1
 kind: UDPIngress
 metadata:
