@@ -38,6 +38,27 @@ spec:
         jitsi/component: jvb
     spec:
       containers:
+      {{- if .Values.jvb.metrics.enabled }}
+      - name: prometheus-exporter
+        # sidecar container that exports stats for prometheus
+        image: "{{ .Values.jvb.metrics.image.repository }}:{{ .Values.jvb.metrics.image.tag | default "1.1.6" }}"
+        imagePullPolicy: {{ .Values.jvb.metrics.image.pullPolicy }}
+        ports:
+          - containerPort: 9888
+            name: metrics
+            protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 9888
+          initialDelaySeconds: 3
+          periodSeconds: 5
+        args:
+          - "-videobridge-url"
+          - "http://localhost:8080/colibri/stats"
+        resources:
+          {{- toYaml .Values.jvb.metrics.resources | nindent 12 }}
+      {{- end }}
       - args:
         - /init
         command:
