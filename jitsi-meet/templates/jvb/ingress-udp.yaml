@@ -1,3 +1,4 @@
+{{ if .Capabilities.APIVersions.Has "apps/v1/Deployment" -}}
 {{- if and (.Values.kong.enabled) (.Values.kong.ingress) -}}
 apiVersion: configuration.konghq.com/v1beta1
 kind: UDPIngress
@@ -28,3 +29,4 @@ spec:
 {{- end }}
 {{- end }}
 {{- end }}
+{{ end -}}
