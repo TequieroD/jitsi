@@ -22,3 +22,7 @@ data:
   {{ $key }}: {{ tpl $value $ | quote }}
   {{- end }}
   {{- end }}
+  custom-config.js: |
+{{ tpl ( .Files.Get "config/web/custom-config.js") . | indent 4 }}
+  custom-interface_config.js: |
+{{ tpl ( .Files.Get "config/web/custom-interface_config.js") . | indent 4}}

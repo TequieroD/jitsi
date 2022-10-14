@@ -61,8 +61,14 @@ spec:
           {{- end }}
           resources:
             {{- toYaml .Values.web.resources | nindent 12 }}
-          {{- with .Values.web.extraVolumeMounts }}
           volumeMounts:
+          - mountPath: /config/custom-config.js
+            name: {{ include "jitsi-meet.web.fullname" . }}
+            subPath: custom-config.js
+          - mountPath: /config/custom-interface_config.js
+            name: {{ include "jitsi-meet.web.fullname" . }}
+            subPath: custom-interface_config.js
+          {{- with .Values.web.extraVolumeMounts }} 
           {{- toYaml . | nindent 10 }}
           {{- end }}
 
@@ -78,7 +84,10 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-    {{- with .Values.web.extraVolumes }}
       volumes:
+      - name: {{ include "jitsi-meet.web.fullname" .  }}
+        configMap:
+          name: {{ include "jitsi-meet.web.fullname" .  }}
+    {{- with .Values.web.extraVolumes }}
         {{- toYaml . | nindent 8 }}
     {{- end }}
