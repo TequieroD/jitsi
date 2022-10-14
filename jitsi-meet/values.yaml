@@ -239,7 +239,7 @@ jvb:
       tag: 1.2.1
       pullPolicy: IfNotPresent
     serviceMonitor:
-      enabled: true
+      enabled: false
       selector:
         release: prometheus-operator
       interval: 10s
