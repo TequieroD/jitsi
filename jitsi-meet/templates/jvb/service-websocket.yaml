@@ -25,6 +25,11 @@ spec:
     - port: 9090
       protocol: TCP
       name: colibri-ws-tcp
+    {{- if .Values.jvb.metrics.enabled }}
+    - port: 9888
+      protocol: TCP
+      name: metrics
+    {{- end }}
   {{- with .Values.jvb.service.externalIPs }}
   externalIPs:
   {{ toYaml . | indent 2 | trim }}
