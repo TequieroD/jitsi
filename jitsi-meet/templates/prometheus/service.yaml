@@ -1,20 +1,18 @@
+{{- if .Values.prometheus.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "jitsi-meet.web.fullname" . }}
+  name: {{- include "jitsi-meet.prometheus.fullname" . | nindent 4 }}
   labels:
-    {{- include "jitsi-meet.web.labels" . | nindent 4 }}
+    name: {{- include "jitsi-meet.prometheus.labels" . | nindent 4 }}
   annotations:
     cloud.google.com/neg: '{"ingress": true}'
 spec:
-  type: {{ .Values.web.service.type }}
+  type: {{ .Values.prometheus.service.type }}
   ports:
-    - port: {{ .Values.web.service.port }}
-      protocol: TCP
-      name: http
-  {{- with .Values.web.service.externalIPs }}
-  externalIPs:
-  {{ toYaml . | indent 2 | trim }}
-  {{- end }}
+  - port: {{ .Values.prometheus.service.port }}
+    protocol: TCP
+    name: prometheus
   selector:
-    {{- include "jitsi-meet.web.selectorLabels" . | nindent 4 }}
+    {{- include "jitsi-meet.prometheus.selectorLabels" . | nindent 4 }}
+{{- end }}
