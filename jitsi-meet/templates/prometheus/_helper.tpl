@@ -1,4 +1,3 @@
-
 {{- define "jitsi-meet.prometheus.fullname" -}}
 {{ include "jitsi-meet.fullname" . }}-prometheus
 {{- end -}}
@@ -12,4 +11,3 @@ app.kubernetes.io/component: prometheus
 {{ include "jitsi-meet.selectorLabels" . }}
 app.kubernetes.io/component: prometheus
 {{- end -}}
-

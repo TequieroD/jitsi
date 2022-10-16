@@ -1,0 +1,18 @@
+{{- if .Values.grafana.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "jitsi-meet.grafana.fullname" . }}
+  labels:
+    {{- include "jitsi-meet.grafana.labels" . | nindent 4 }}
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}'
+spec:
+  type: {{ .Values.grafana.service.type }}
+  ports:
+  - port: {{ .Values.grafana.service.port }}
+    protocol: TCP
+    name: grafana
+  selector:
+    {{- include "jitsi-meet.grafana.selectorLabels" . | nindent 4 }}
+{{- end }}

@@ -357,3 +357,13 @@ prometheus:
     repository: bitnami/prometheus
     tag: latest
     pullPolicy: IfNotPresent
+
+grafana:
+  enabled: true
+  service:
+    type: ClusterIP
+    port: 3000
+  image:
+    repository: grafana/grafana
+    tag: 8.1.2
+    pullPolicy: IfNotPresent

@@ -2,7 +2,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{- include "jitsi-meet.prometheus.fullname" . }}
+  name: {{ include "jitsi-meet.prometheus.fullname" . }}
+  labels:
+    {{- include "jitsi-meet.prometheus.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
@@ -14,18 +16,19 @@ spec:
         {{- include "jitsi-meet.prometheus.selectorLabels" . | nindent 8 }}
     spec:
       containers:
-      - name:  {{- include "jitsi-meet.prometheus.fullname" . }}
-        image: bitnami/prometheus:latest
-        ports:
-          - containerPort: 9090
-            name: prometheus
-            protocol: TCP
-        volumeMounts:
-          - name: {{- include "jitsi-meet.prometheus.fullname" . }}-volume
-            mountPath: /etc/prometheus/
+        - name: {{ include "jitsi-meet.prometheus.fullname" . }}
+          image: "{{ .Values.prometheus.image.repository }}:{{ .Values.prometheus.image.tag }}"
+          imagePullPolicy: {{ .Values.prometheus.image.pullPolicy }}
+          ports:
+            - name: prometheus
+              containerPort: 9090
+              protocol: TCP
+          volumeMounts:
+          - mountPath: /etc/prometheus/
+            name: {{ include "jitsi-meet.prometheus.fullname" . }}-volume
       volumes:
-        - name: {{- include "jitsi-meet.prometheus.fullname" . }}-volume
-          configMap:
-            defaultMode: 420
-            name: {{- include "jitsi-meet.prometheus.fullname" . }}-conf
-{{- end}}
+      - name: {{ include "jitsi-meet.prometheus.fullname" .  }}-volume
+        configMap:
+          name: {{ include "jitsi-meet.prometheus.fullname" .  }}-conf
+          defaultMode: 420
+{{- end }}

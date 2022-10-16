@@ -1,0 +1,26 @@
+{{- if .Values.grafana.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "jitsi-meet.grafana.fullname" . }}
+  labels:
+    {{- include "jitsi-meet.grafana.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "jitsi-meet.grafana.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "jitsi-meet.grafana.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ include "jitsi-meet.grafana.fullname" . }}
+          image: "{{ .Values.grafana.image.repository }}:{{ .Values.grafana.image.tag }}"
+          imagePullPolicy: {{ .Values.grafana.image.pullPolicy }}
+          ports:
+            - name: grafana
+              containerPort: {{  .Values.grafana.service.port }}
+              protocol: TCP
+{{- end }}
