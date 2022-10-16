@@ -65,7 +65,7 @@ web:
     externalIPs: []
 
   ingress:
-    enabled: true
+    enabled: false
     # ingressClassName: "nginx-ingress-0"
     annotations:
         networking.gke.io/managed-certificates: jitsi-web-certificate
