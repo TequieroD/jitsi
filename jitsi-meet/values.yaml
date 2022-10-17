@@ -174,13 +174,13 @@ jvb:
   service:
     enabled:
     type: NodePort
-    loadBalancerIP: 35.202.67.235
+    LoadbalancerIP: 35.222.102.102
     externalIPs: []
     ## Annotations to be added to the service (if LoadBalancer is used)
     ##
     annotations: {}
 
-  publicIP: 35.202.67.235
+  publicIP: 35.222.102.102
   breweryMuc: jvbbrewery
 
   livenessProbe:
@@ -361,7 +361,8 @@ prometheus:
 grafana:
   enabled: true
   service:
-    type: ClusterIP
+    type: LoadBalancer
+    loadBalancerIP: 35.222.102.102
     port: 3000
   image:
     repository: grafana/grafana

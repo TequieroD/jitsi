@@ -9,6 +9,9 @@ metadata:
     cloud.google.com/neg: '{"ingress": true}'
 spec:
   type: {{ .Values.grafana.service.type }}
+  {{- with .Values.grafana.service.LoadbalancerIP }}
+  loadBalancerIP: {{ . }}
+  {{- end }}
   ports:
   - port: {{ .Values.grafana.service.port }}
     protocol: TCP

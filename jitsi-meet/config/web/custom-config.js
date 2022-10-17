@@ -25,7 +25,6 @@ config.toolbarButtons= [
  ];
 config.hideConferenceSubject=true;
 config.videoQuality= {
-    disabledCodec: 'VP8',
     preferredCodec: 'VP9',
     enforcePreferredCodec: true,
     maxBitratesVideo: {
