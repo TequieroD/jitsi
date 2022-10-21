@@ -1,14 +1,14 @@
 # Download
 
-git clone https://github.com/TequieroD/jitsi.git
-cd jitsi
-git checkout develop/static-statefulset-hpa-kong
+- git clone https://github.com/TequieroD/jitsi.git
+- cd jitsi
+- git checkout develop/static-statefulset-hpa-kong
 
 
 # [option] get External IP
 
-gcloud compute addresses create jvb --region us-central1
-gcloud compute addresses list
+- gcloud compute addresses create jvb --region us-central1
+- gcloud compute addresses list
 
 
 # Edit jitsi-meet/values.yaml
